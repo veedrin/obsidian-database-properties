@@ -1,0 +1,22 @@
+.dbp-section .setting-item {
+	padding-top: 0.75em;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.dbp-section button:focus-visible {
+    box-shadow: var(--input-shadow);
+}
+
+.dbp-draggable-list .drag-handle {
+    padding: 5px;
+    color: var(--text-muted);
+    cursor: grab;
+}
+
+.dbp-draggable-list .drag-handle:active {
+    cursor: grabbing;
+}
+
+.dbp-info {
+    white-space: pre;
+}
