@@ -195,7 +195,8 @@ class DatabasePropertiesModal extends Modal {
 
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.createEl('h4', { text: 'Database Properties' });
+
+        new Setting(contentEl).setName('Database properties').setHeading();
 
         this.selectSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
         this.listSectionEl = contentEl.createEl('div', { cls: 'dbp-section dbp-draggable-list' });
@@ -203,23 +204,23 @@ class DatabasePropertiesModal extends Modal {
         this.saveSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
 
         const setting = new Setting(this.selectSectionEl)
-            .setName('Select Any Database Files')
+            .setName('Select any database files')
             .addButton(button => button
-                .setButtonText('By Folder')
+                .setButtonText('By folder')
                 .onClick(async () => {
                     new FolderSuggestModal(this.app, async (folder) => {
                         this.fileList = await this.plugin.getFilesByFolder(folder);
                         await this.initializeView();
-                        setting.setName(`Selected Folder: ${folder}`);
+                        setting.setName(`Selected folder: ${folder}`);
                     }).open();
                 }))
             .addButton(button => button
-                .setButtonText('By Tag')
+                .setButtonText('By tag')
                 .onClick(async () => {
                     new TagSuggestModal(this.app, async (tag) => {
                         this.fileList = await this.plugin.getFilesByTag(tag);
                         await this.initializeView();
-                        setting.setName(`Selected Tag: ${tag}`);
+                        setting.setName(`Selected tag: ${tag}`);
                     }).open();
                 }));
 
@@ -261,7 +262,7 @@ class DatabasePropertiesModal extends Modal {
             if (!this.internalpropertyList.includes(prop.key)) {
                 setting.addButton(button => button
                     .setIcon('pencil')
-                    .setTooltip('Rename Property')
+                    .setTooltip('Rename property')
                     .onClick(() => {
                         new RenamePropertyModal(this.app, prop.key, (name) => {
                             if (name && !this.propertyList.some(p => p.key === name)) {
@@ -274,10 +275,10 @@ class DatabasePropertiesModal extends Modal {
 
             setting.addButton(button => button
                 .setIcon('trash')
-                .setTooltip('Delete Property')
+                .setTooltip('Delete property')
                 .onClick(() => {
                     new ConfirmationModal(this.app, 
-                        'Confirm Delete', 
+                        'Confirm delete', 
                         `Sure to delete the property "${prop.key}" ?`, 
                         'Confirm',
                         () => {
@@ -323,7 +324,7 @@ class DatabasePropertiesModal extends Modal {
         this.addSectionEl.empty();
 
         new Setting(this.addSectionEl)
-            .setName('Add New Property')
+            .setName('Add new property')
             .addText(text => {
                 this.addInputEl = text.onChange(value => this.newAddName = value).inputEl;
                 this.addInputEl.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -364,7 +365,7 @@ class DatabasePropertiesModal extends Modal {
                 .setCta()
                 .onClick(() => {
                     new ConfirmationModal(this.app,
-                        'Confirm Save', 
+                        'Confirm save', 
                         'This will update the properties of all selected files.\nThis operation is irreversible, are you sure you want to save all the changes?', 
                         'Confirm',
                         async () => {
@@ -402,10 +403,9 @@ class RenamePropertyModal extends Modal {
     onOpen() {
         const { contentEl } = this;
 
-        contentEl.createEl('h4', { text: 'Rename Property' });
-
+        new Setting(contentEl).setName('Rename property').setHeading();
         new Setting(contentEl)
-            .setName('Enter New Property Name')
+            .setName('Enter new property name')
             .addText(text => {
                 this.renameInputEl = text.setValue(this.oldName).onChange(value => this.newName = value).inputEl;
                 this.renameInputEl.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -455,7 +455,7 @@ class ConfirmationModal extends Modal {
     onOpen() {
         const { contentEl } = this;
 
-        contentEl.createEl('h4', { text: this.title });
+        new Setting(contentEl).setName(this.title).setHeading();
         contentEl.createEl('p', { text: this.message, cls: 'dbp-info' });
 
         new Setting(contentEl)
