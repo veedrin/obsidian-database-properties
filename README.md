@@ -1,4 +1,4 @@
-# Obsidian Database Properties Plugin
+# Database Properties Plugin
 
 Batch manage properties for Obsidian database files: Add, Delete, Modify, Sort.
 
