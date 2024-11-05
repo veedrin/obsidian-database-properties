@@ -1,4 +1,4 @@
-import { App, Plugin, Setting, TFile, TFolder, Modal, FuzzySuggestModal, FrontMatterCache, Notice } from 'obsidian';
+import { App, Plugin, Setting, TFile, TFolder, Modal, FuzzySuggestModal, getAllTags, Notice } from 'obsidian';
 
 interface Property {
     id: string;
@@ -8,7 +8,7 @@ interface Property {
     types?: Set<string>;
 }
 
-export default class ObsidianDatabaseProperties extends Plugin {
+export default class DatabaseProperties extends Plugin {
 
     frontmatterLists: Array<Property>[] = [];
     wikiLinkPattern = /^\[\[.*\]\]$/;
@@ -17,7 +17,7 @@ export default class ObsidianDatabaseProperties extends Plugin {
         this.addRibbonIcon('egg', 'Database Properties', () => new DatabasePropertiesModal(this.app, this).open());
 
         this.addCommand({
-            id: 'database-properties',
+            id: 'open',
             name: 'Open',
             callback: () => new DatabasePropertiesModal(this.app, this).open(),
         });
@@ -35,31 +35,15 @@ export default class ObsidianDatabaseProperties extends Plugin {
         const fileList = this.app.vault.getMarkdownFiles();
         return fileList.filter(file => {
             const cache = this.app.metadataCache.getFileCache(file);
+
             if (!cache) return false;
-            // 检查文件的标签列表
-            if (cache.tags && cache.tags.some(t => t.tag === `#${tag}` || t.tag === tag)) {
-                return true;
-            }
-            // 检查 frontmatter 中的标签
-            if (cache.frontmatter) {
-                const frontmatterTags = cache.frontmatter.tags || cache.frontmatter.tag;
-                if (frontmatterTags) {
-                    if (Array.isArray(frontmatterTags)) {
-                        if (frontmatterTags.includes(tag) || frontmatterTags.includes(`#${tag}`)) {
-                            return true;
-                        }
-                    } else if (typeof frontmatterTags === 'string') {
-                        if (frontmatterTags === tag || frontmatterTags === `#${tag}`) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
+
+            const tags = getAllTags(cache);
+            return tags?.some(t => t === tag) || false;
         });
     }
 
-     async getProperties(fileList: TFile[]): Promise<Property[]> {
+    async getProperties(fileList: TFile[]): Promise<Property[]> {
         const propertiesMap = new Map<string, Property>();
         for (const file of fileList) {
             const frontmatterList: Property[] = [];
@@ -73,7 +57,7 @@ export default class ObsidianDatabaseProperties extends Plugin {
                         propertiesMap.set(key, {
                             id,
                             key,
-                            value: '',
+                            value: null,
                             type: '',
                             types: new Set<string>(),
                         });
@@ -128,53 +112,36 @@ export default class ObsidianDatabaseProperties extends Plugin {
         return 'Text';
     }
 
-    async updateMarkdownFiles(fileList: TFile[], propertyList: Property[]) {
-
+    async batchUpdateFrontmatter(fileList: TFile[], propertyList: Property[]) {
         const notice = new Notice('Processing files...', 0);
         const length = fileList.length;
 
         for (let i = 0; i < length; i++) {
-
             notice.setMessage(`Processing file ${i + 1} of ${length}...`);
-            const file = fileList[i];
-            const content = await this.app.vault.read(file);
             const frontmatterList = this.frontmatterLists[i];
-
-            const renderList = propertyList.map(prop => {
-                const found = frontmatterList.find(fm => fm.id === prop.id) || prop;
-                const key = prop.key;
-                const value = found.value;
-                return `${key}: ${this.stringifyValue(value)}`;
+        
+            await this.app.fileManager.processFrontMatter(fileList[i], (frontmatter) => {
+                // 清空当前的属性
+                Object.keys(frontmatter).forEach(key => {
+                    delete frontmatter[key];
+                });
+            
+                // 添加新的属性
+                propertyList.forEach(prop => {
+                    const found = frontmatterList.find(fm => fm.id === prop.id) || prop;
+                    frontmatter[prop.key] = found.value;
+                });
             });
-
-            const newFrontmatter = renderList.length ? `---\n${renderList.join('\n')}\n---\n` : '';
-            const newContent = content.split('---').slice(2).join('---').trim();
-            const value = `${newFrontmatter}${newContent}`;
-            await this.app.vault.modify(file, value);
         }
 
         notice.hide();
-    }
-
-    stringifyValue(value: any): string {
-        if (Array.isArray(value)) {
-            const string = value.map(v => {
-                if (this.wikiLinkPattern.test(v)) {
-                    return `\n  - "${v.replace(/"/g, '\\"')}"`;
-                } else {
-                    return `\n  - ${v}`;
-                }
-            }).join('');
-            return string;
-        }
-        return value;
     }
 }
 
 // 主弹窗
 class DatabasePropertiesModal extends Modal {
 
-    plugin: ObsidianDatabaseProperties;
+    plugin: DatabaseProperties;
     fileList: TFile[] = [];
     // 当前属性列表
     propertyList: Property[] = [];
@@ -186,7 +153,7 @@ class DatabasePropertiesModal extends Modal {
     internalpropertyList: string[] = ['tags', 'aliases', 'cssclasses'];
     newAddName: string = '';
 
-    constructor(app: App, plugin: ObsidianDatabaseProperties) {
+    constructor(app: App, plugin: DatabaseProperties) {
         super(app);
         this.plugin = plugin;
     }
@@ -346,8 +313,8 @@ class DatabasePropertiesModal extends Modal {
             this.propertyList.push({
                 id: crypto.randomUUID(),
                 key: newAddName,
-                value: '',
-                type: 'Text'
+                value: null,
+                type: 'Null'
             });
             this.refreshView();
             this.newAddName = '';
@@ -370,7 +337,7 @@ class DatabasePropertiesModal extends Modal {
                         'Confirm',
                         async () => {
                             this.close();
-                            await this.plugin.updateMarkdownFiles(this.fileList, this.propertyList);
+                            await this.plugin.batchUpdateFrontmatter(this.fileList, this.propertyList);
                         }
                     ).open();
                 }));
@@ -505,22 +472,8 @@ class TagSuggestModal extends FuzzySuggestModal<string> {
         this.app.vault.getMarkdownFiles().forEach(file => {
             const cache = this.app.metadataCache.getFileCache(file);
             if (cache) {
-                // 检查内联标签
-                if (cache.tags) {
-                    // 移除 '#' 前缀
-                    cache.tags.forEach(tag => tagSet.add(tag.tag.slice(1)));
-                }
-                // 检查 frontmatter 中的标签
-                if (cache.frontmatter && cache.frontmatter.tags) {
-                    const fmTags = cache.frontmatter.tags;
-                    if (Array.isArray(fmTags)) {
-                        // 移除可能的 '#' 前缀
-                        fmTags.forEach(tag => tagSet.add(tag.replace(/^#/, '')));
-                    } else if (typeof fmTags === 'string') {
-                        // 移除可能的 '#' 前缀
-                        tagSet.add(fmTags.replace(/^#/, ''));
-                    }
-                }
+                const tags = getAllTags(cache);
+                tags?.forEach(tag => tagSet.add(tag));
             }
         });
         return Array.from(tagSet);
