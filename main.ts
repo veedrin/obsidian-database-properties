@@ -112,7 +112,7 @@ export default class DatabaseProperties extends Plugin {
         return 'Text';
     }
 
-    async batchUpdateFrontmatter(fileList: TFile[], propertyList: Property[]) {
+    async batchWriteFrontmatter(fileList: TFile[], propertyList: Property[]) {
         const notice = new Notice('Processing files...', 0);
         const length = fileList.length;
 
@@ -337,7 +337,7 @@ class DatabasePropertiesModal extends Modal {
                         'Confirm',
                         async () => {
                             this.close();
-                            await this.plugin.batchUpdateFrontmatter(this.fileList, this.propertyList);
+                            await this.plugin.batchWriteFrontmatter(this.fileList, this.propertyList);
                         }
                     ).open();
                 }));
