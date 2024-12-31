@@ -14,7 +14,7 @@ export default class DatabaseProperties extends Plugin {
     wikiLinkPattern = /^\[\[.*\]\]$/;
 
     async onload() {
-        this.addRibbonIcon('egg', 'Database Properties', () => new DatabasePropertiesModal(this.app, this).open());
+        this.addRibbonIcon('list-minus', 'Database Properties', () => new DatabasePropertiesModal(this.app, this).open());
 
         this.addCommand({
             id: 'open',
@@ -113,11 +113,11 @@ export default class DatabaseProperties extends Plugin {
     }
 
     async batchWriteFrontmatter(fileList: TFile[], propertyList: Property[]) {
-        const notice = new Notice('Processing files...', 0);
+        const notice = new Notice('开始处理...', 0);
         const length = fileList.length;
 
         for (let i = 0; i < length; i++) {
-            notice.setMessage(`Processing file ${i + 1} of ${length}...`);
+            notice.setMessage(`处理进度：${i + 1} / ${length}`);
             const frontmatterList = this.frontmatterLists[i];
         
             await this.app.fileManager.processFrontMatter(fileList[i], (frontmatter) => {
@@ -163,7 +163,7 @@ class DatabasePropertiesModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        new Setting(contentEl).setName('Database properties').setHeading();
+        new Setting(contentEl).setName('Database Properties').setHeading();
 
         this.selectSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
         this.listSectionEl = contentEl.createEl('div', { cls: 'dbp-section dbp-draggable-list' });
@@ -171,23 +171,23 @@ class DatabasePropertiesModal extends Modal {
         this.saveSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
 
         const setting = new Setting(this.selectSectionEl)
-            .setName('Select any database files')
+            .setName('选择数据库文件')
             .addButton(button => button
-                .setButtonText('By folder')
+                .setButtonText('通过目录')
                 .onClick(async () => {
                     new FolderSuggestModal(this.app, async (folder) => {
                         this.fileList = await this.plugin.getFilesByFolder(folder);
                         await this.initializeView();
-                        setting.setName(`Selected folder: ${folder}`);
+                        setting.setName(`选中目录：${folder}`);
                     }).open();
                 }))
             .addButton(button => button
-                .setButtonText('By tag')
+                .setButtonText('通过标签')
                 .onClick(async () => {
                     new TagSuggestModal(this.app, async (tag) => {
                         this.fileList = await this.plugin.getFilesByTag(tag);
                         await this.initializeView();
-                        setting.setName(`Selected tag: ${tag}`);
+                        setting.setName(`选中标签：${tag}`);
                     }).open();
                 }));
 
@@ -229,7 +229,7 @@ class DatabasePropertiesModal extends Modal {
             if (!this.internalpropertyList.includes(prop.key)) {
                 setting.addButton(button => button
                     .setIcon('pencil')
-                    .setTooltip('Rename property')
+                    .setTooltip('属性改名')
                     .onClick(() => {
                         new RenamePropertyModal(this.app, prop.key, (name) => {
                             if (name && !this.propertyList.some(p => p.key === name)) {
@@ -242,12 +242,12 @@ class DatabasePropertiesModal extends Modal {
 
             setting.addButton(button => button
                 .setIcon('trash')
-                .setTooltip('Delete property')
+                .setTooltip('属性删除')
                 .onClick(() => {
                     new ConfirmationModal(this.app, 
-                        'Confirm delete', 
-                        `Sure to delete the property "${prop.key}" ?`, 
-                        'Confirm',
+                        '删除确认', 
+                        `确定要删除属性 "${prop.key}" 吗？`, 
+                        '确认',
                         () => {
                             this.propertyList = this.propertyList.filter(p => p !== prop);
                             this.refreshView();
@@ -291,7 +291,7 @@ class DatabasePropertiesModal extends Modal {
         this.addSectionEl.empty();
 
         new Setting(this.addSectionEl)
-            .setName('Add new property')
+            .setName('属性添加')
             .addText(text => {
                 this.addInputEl = text.onChange(value => this.newAddName = value).inputEl;
                 this.addInputEl.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -302,7 +302,7 @@ class DatabasePropertiesModal extends Modal {
                 })
             })
             .addButton(button => button
-                .setButtonText('Add')
+                .setButtonText('添加')
                 .setCta()
                 .onClick(() => this.addNewProperty()));
     }
@@ -328,13 +328,13 @@ class DatabasePropertiesModal extends Modal {
 
         if (this.plugin.frontmatterLists.length) {
             setting.addButton(button => button
-                .setButtonText('Save')
+                .setButtonText('保存')
                 .setCta()
                 .onClick(() => {
                     new ConfirmationModal(this.app,
-                        'Confirm save', 
-                        'This will update the properties of all selected files.\nThis operation is irreversible, are you sure you want to save all the changes?', 
-                        'Confirm',
+                        '保存确认', 
+                        '这将更新所有选中文件的属性，此操作不可撤销，确定保存吗？', 
+                        '确认',
                         async () => {
                             this.close();
                             await this.plugin.batchWriteFrontmatter(this.fileList, this.propertyList);
@@ -343,7 +343,7 @@ class DatabasePropertiesModal extends Modal {
                 }));
         } else {
             setting.addButton(button => button
-                .setButtonText('Close')
+                .setButtonText('关闭')
                 .setCta()
                 .onClick(() => this.close()));
         }
@@ -370,9 +370,9 @@ class RenamePropertyModal extends Modal {
     onOpen() {
         const { contentEl } = this;
 
-        new Setting(contentEl).setName('Rename property').setHeading();
+        new Setting(contentEl).setName('属性改名').setHeading();
         new Setting(contentEl)
-            .setName('Enter new property name')
+            .setName('输入新属性名')
             .addText(text => {
                 this.renameInputEl = text.setValue(this.oldName).onChange(value => this.newName = value).inputEl;
                 this.renameInputEl.addEventListener('keydown', (event: KeyboardEvent) => {
@@ -386,14 +386,14 @@ class RenamePropertyModal extends Modal {
 
         new Setting(contentEl)
             .addButton(button => button
-                .setButtonText('Confirm')
+                .setButtonText('确认')
                 .setCta()
                 .onClick(() => {
                     this.onRename(this.newName);
                     this.close();
                 }))
             .addButton(button => button
-                .setButtonText('Cancel')
+                .setButtonText('取消')
                 .onClick(() => {
                     this.close();
                 }));
@@ -427,7 +427,7 @@ class ConfirmationModal extends Modal {
 
         new Setting(contentEl)
             .addButton(button => button
-                .setButtonText('Cancel')
+                .setButtonText('取消')
                 .onClick(() => this.close()))
             .addButton(button => button
                 .setButtonText(this.confirmText)
