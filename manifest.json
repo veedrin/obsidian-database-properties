@@ -4,7 +4,7 @@
     "version": "1.0.0",
     "minAppVersion": "0.15.0",
     "description": "Batch manage properties for database files: Add, Delete, Modify, Sort.",
-    "author": "Yechi",
+    "author": "veedrin",
     "authorUrl": "https://github.com/veedrin",
     "isDesktopOnly": false
 }
