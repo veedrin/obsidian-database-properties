@@ -3,6 +3,10 @@
 	border-top: 1px solid var(--background-modifier-border);
 }
 
+.setting-item input:focus-visible {
+    box-shadow: none;
+}
+
 .dbp-section button:focus-visible {
     box-shadow: var(--input-shadow);
 }
