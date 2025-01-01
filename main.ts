@@ -213,7 +213,7 @@ class DatabasePropertiesModal extends Modal {
         this.listSectionEl.empty();
 
         for (const prop of this.propertyList) {
-            const setting = new Setting(this.listSectionEl).setName(prop.key).setDesc(`Type: ${prop.type}`);
+            const setting = new Setting(this.listSectionEl).setName(prop.key).setDesc(`数据类型：${prop.type}`);
 
             const settingEl = setting.settingEl;
             settingEl.setAttribute('draggable', 'true');
