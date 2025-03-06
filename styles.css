@@ -1,26 +1,28 @@
-.dbp-section .setting-item {
-	padding-top: 0.75em;
-	border-top: 1px solid var(--background-modifier-border);
+.tp-section .setting-item {
+	border-top: 0;
+	padding-top: 9px;
+	position: relative;
 }
 
 .setting-item input:focus-visible {
     box-shadow: none;
 }
 
-.dbp-section button:focus-visible {
-    box-shadow: var(--input-shadow);
+.tp-section button:focus-visible {
+    box-shadow: none;
 }
 
-.dbp-draggable-list .drag-handle {
-    padding: 5px;
-    color: var(--text-muted);
+.tp-draggable-list .drag-handle {
     cursor: grab;
+    margin-right: 8px;
+    color: var(--text-muted);
 }
 
-.dbp-draggable-list .drag-handle:active {
+.tp-draggable-list .drag-handle:active {
     cursor: grabbing;
 }
 
-.dbp-info {
-    white-space: pre;
+.tp-info {
+    margin: 1em 12px;
+    color: var(--text-muted);
 }
