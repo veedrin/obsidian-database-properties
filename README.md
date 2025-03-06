@@ -1,4 +1,4 @@
-# Database Properties 插件
+# Tiny Properties 插件
 
 Batch manage properties for Obsidian database files: Add, Delete, Modify, Sort.
 
