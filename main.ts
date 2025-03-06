@@ -8,18 +8,18 @@ interface Property {
     types?: Set<string>;
 }
 
-export default class DatabaseProperties extends Plugin {
+export default class TinyProperties extends Plugin {
 
     frontmatterLists: Array<Property>[] = [];
     wikiLinkPattern = /^\[\[.*\]\]$/;
 
     async onload() {
-        this.addRibbonIcon('list-minus', 'Database Properties', () => new DatabasePropertiesModal(this.app, this).open());
+        this.addRibbonIcon('list-minus', 'Tiny Properties', () => new TinyPropertiesModal(this.app, this).open());
 
         this.addCommand({
             id: 'open',
             name: 'Open',
-            callback: () => new DatabasePropertiesModal(this.app, this).open(),
+            callback: () => new TinyPropertiesModal(this.app, this).open(),
         });
     }
 
@@ -139,9 +139,9 @@ export default class DatabaseProperties extends Plugin {
 }
 
 // 主弹窗
-class DatabasePropertiesModal extends Modal {
+class TinyPropertiesModal extends Modal {
 
-    plugin: DatabaseProperties;
+    plugin: TinyProperties;
     fileList: TFile[] = [];
     // 当前属性列表
     propertyList: Property[] = [];
@@ -153,7 +153,7 @@ class DatabasePropertiesModal extends Modal {
     internalpropertyList: string[] = ['tags', 'aliases', 'cssclasses'];
     newAddName: string = '';
 
-    constructor(app: App, plugin: DatabaseProperties) {
+    constructor(app: App, plugin: TinyProperties) {
         super(app);
         this.plugin = plugin;
     }
@@ -163,12 +163,12 @@ class DatabasePropertiesModal extends Modal {
         const { contentEl } = this;
         contentEl.empty();
 
-        new Setting(contentEl).setName('Database Properties').setHeading();
+        new Setting(contentEl).setName('Tiny Properties').setHeading();
 
-        this.selectSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
-        this.listSectionEl = contentEl.createEl('div', { cls: 'dbp-section dbp-draggable-list' });
-        this.addSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
-        this.saveSectionEl = contentEl.createEl('div', { cls: 'dbp-section' });
+        this.selectSectionEl = contentEl.createEl('div', { cls: 'tp-section' });
+        this.listSectionEl = contentEl.createEl('div', { cls: 'tp-section tp-draggable-list' });
+        this.addSectionEl = contentEl.createEl('div', { cls: 'tp-section' });
+        this.saveSectionEl = contentEl.createEl('div', { cls: 'tp-section' });
 
         const setting = new Setting(this.selectSectionEl)
             .setName('选择数据库文件')
@@ -423,7 +423,7 @@ class ConfirmationModal extends Modal {
         const { contentEl } = this;
 
         new Setting(contentEl).setName(this.title).setHeading();
-        contentEl.createEl('p', { text: this.message, cls: 'dbp-info' });
+        contentEl.createEl('p', { text: this.message, cls: 'tp-info' });
 
         new Setting(contentEl)
             .addButton(button => button
