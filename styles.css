@@ -1,28 +1,26 @@
 .tp-section .setting-item {
-	border-top: 0;
-	padding-top: 9px;
-	position: relative;
+	padding-top: 0.75em;
+	border-top: 1px solid var(--background-modifier-border);
 }
 
-.setting-item input:focus-visible {
+.tp-section .setting-item input:focus-visible {
     box-shadow: none;
 }
 
 .tp-section button:focus-visible {
-    box-shadow: none;
+    box-shadow: var(--input-shadow);
 }
 
 .tp-draggable-list .drag-handle {
-    cursor: grab;
-    margin-right: 8px;
-    color: var(--text-muted);
+	padding: 5px;
+	color: var(--text-muted);
+	cursor: grab;
 }
 
 .tp-draggable-list .drag-handle:active {
-    cursor: grabbing;
+	cursor: grabbing;
 }
 
 .tp-info {
-    margin: 1em 12px;
-    color: var(--text-muted);
+	white-space: pre;
 }
